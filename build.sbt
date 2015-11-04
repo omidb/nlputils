@@ -6,10 +6,13 @@ val commonSettings = Seq(
   organization := "com.github.omidb",
   version := "0.1.0-SNAPSHOT",
   scalaVersion := "2.11.6",
-  scalacOptions ++= Seq("-unchecked", "-feature", "-deprecation", "-encoding", "utf8"),
   testFrameworks += new TestFramework("utest.runner.Framework"),
+  resolvers += Resolver.sonatypeRepo("snapshots"),
   libraryDependencies ++= Seq(
-    "com.lihaoyi" %%% "utest" % "0.3.1" % "test"
+    "com.lihaoyi" %%% "utest" % "0.3.1" % "test",
+    "com.github.omidb" %%% "dgraph" % "0.1.0-SNAPSHOT",
+    "com.lihaoyi" %%% "fastparse" % "0.2.1",
+    "com.beachape" %% "enumeratum" % "1.3.2"
   )
 )
 
@@ -57,7 +60,7 @@ lazy val nlputils = crossProject
         Some("releases" at nexus + "service/local/staging/deploy/maven2")
     }
   ).jsSettings(
-  scalaJSStage in Global := FullOptStage
+  scalaJSStage in Global := FastOptStage
 ).jvmSettings(
 )
 
@@ -65,10 +68,7 @@ lazy val nlputilsJS = nlputils.js
 
 lazy val nlputilsJVM = nlputils.jvm
 
-lazy val root = project.in(file(".")).
-  settings(commonSettings: _*).
-  settings(
-    publish := {},
-    publishLocal := {}
-  ).
-  aggregate(nlputilsJS, nlputilsJVM)
+
+lazy val root = preventPublication(project.in(file(".")))
+  .settings()
+  .aggregate(nlputilsJS, nlputilsJVM)
