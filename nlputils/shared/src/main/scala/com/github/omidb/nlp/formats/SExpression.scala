@@ -10,7 +10,12 @@ object SExpression {
     val whiteSpace = P((StringIn(" ", "\t") | StringIn("\r\n", "\n")).rep)
     val openBracket = P("(" ~ whiteSpace)
     val closeBracket = P(")" ~ whiteSpace)
-    val terminal = P (CharsWhile(c => !c.isWhitespace && c != '(' && c != ')').! ~ whiteSpace)
+    val nonQuoteTerminal = P (CharsWhile(c => !c.isWhitespace && c != '(' && c != ')' && c != '"').! ~ whiteSpace)
+    val quote = P( "\"" ~ CharsWhile(c => c != '"').! ~ "\"" ~ whiteSpace).map(x => "\""+ x +"\"")
+
+    val terminal = nonQuoteTerminal | quote
+
+
 
     def node:P[QNode[IndexedSeq[String],String]] = P(openBracket ~ (branch | leaf | emptyNodes) ~ closeBracket)
 
@@ -23,19 +28,23 @@ object SExpression {
 
     def leaf:P[QNode[IndexedSeq[String],String]] = P(terminal.rep).map(x =>  QNode(x.toIndexedSeq, EmptyHalfEdge))
 
+
+    println(quote.parse(""""sup" """))
     val res = node.parse(s)
 
 
 
     res match {
-      case s:Result.Success[QNode[IndexedSeq[String],String]] => {
-        Some(DGraph.from(s.get.value))
+      case rs:Result.Success[QNode[IndexedSeq[String],String]] => {
+        println(rs.get.value)
+        Some(DGraph.from(rs.get.value))
       }
-      case _ => None
+      case _ => {
+        println(res)
+        None
+      }
     }
   }
-
-
 
 
 }
