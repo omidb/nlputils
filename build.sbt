@@ -62,6 +62,9 @@ lazy val nlputils = crossProject
   ).jsSettings(
   scalaJSStage in Global := FastOptStage
 ).jvmSettings(
+  libraryDependencies ++= Seq(
+    "com.github.pathikrit" %% "better-files" % "2.13.0"
+  )
 )
 
 lazy val nlputilsJS = nlputils.js

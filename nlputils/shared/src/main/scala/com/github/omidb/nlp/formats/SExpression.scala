@@ -5,18 +5,22 @@ import dgraph._
 
 object SExpression {
 
-  def parse(s:String) = {
+  def parse(s:String, checkQuote:Boolean = false) = {
     import fastparse.all._
     val whiteSpace = P((StringIn(" ", "\t") | StringIn("\r\n", "\n")).rep)
     val openBracket = P("(" ~ whiteSpace)
     val closeBracket = P(")" ~ whiteSpace)
-    val nonQuoteTerminal = P (CharsWhile(c => !c.isWhitespace && c != '(' && c != ')' && c != '"').! ~ whiteSpace)
+    val nonQuoteTerminal =
+      if(checkQuote)
+        P (CharsWhile(c => !c.isWhitespace && c != '(' && c != ')' && c != '"').! ~ whiteSpace)
+      else
+        P (CharsWhile(c => !c.isWhitespace && c != '(' && c != ')').! ~ whiteSpace)
+
     val quote = P( "\"" ~ CharsWhile(c => c != '"').! ~ "\"" ~ whiteSpace).map(x => "\""+ x +"\"")
 
-    val terminal = nonQuoteTerminal | quote
+    val terminal = if(checkQuote) nonQuoteTerminal | quote else nonQuoteTerminal
 
-
-
+    def topNode:P[QNode[IndexedSeq[String],String]] = P(whiteSpace ~ node)
     def node:P[QNode[IndexedSeq[String],String]] = P(openBracket ~ (branch | leaf | emptyNodes) ~ closeBracket)
 
     def emptyNodes:P[QNode[IndexedSeq[String],String]] = P(node.rep(1))
@@ -29,18 +33,14 @@ object SExpression {
     def leaf:P[QNode[IndexedSeq[String],String]] = P(terminal.rep).map(x =>  QNode(x.toIndexedSeq, EmptyHalfEdge))
 
 
-    println(quote.parse(""""sup" """))
-    val res = node.parse(s)
 
-
+    val res = topNode.parse(s)
 
     res match {
       case rs:Result.Success[QNode[IndexedSeq[String],String]] => {
-        println(rs.get.value)
         Some(DGraph.from(rs.get.value))
       }
       case _ => {
-        println(res)
         None
       }
     }

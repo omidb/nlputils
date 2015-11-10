@@ -253,6 +253,4 @@ object Penntree {
 
   }
 
-
-
 }
