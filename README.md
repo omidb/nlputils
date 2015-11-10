@@ -14,7 +14,7 @@ Using:
  libraryDependencies += "com.github.omidb" %%% "nlputils" % "0.1.0-SNAPSHOT"
 ```
 
-It contains a very messy OntoNotes reader.
+It contains a reader for OntoNotes.
  
 ```scala
  val file = scala.io.Source.fromFile("E:/data/ontonotes-release-5.0/data/files/data/english/annotations/mz/sinorama/10/ectb_1001.onf").getLines().toIndexedSeq
