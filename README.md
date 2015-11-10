@@ -1,9 +1,11 @@
 # nlputils
 simple tools for NLP
 
+**Anything could change in next releases** 
+
+
 In this project there will be simple tools for everyday NLP tasks
 
-Anything could change in next release 
 
 Using:
 ```scala
