@@ -22,6 +22,8 @@ It contains a reader for OntoNotes.
  val ontdoc = OntoNotesReader.read(file)
 ```
 
+It contains coreference chains, name entities, predicate arguments, parse trees and word senses.
+
 You can also do any S-Expr parse:
 
 ```scala
