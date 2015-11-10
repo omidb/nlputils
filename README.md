@@ -27,3 +27,5 @@ val tree = "(TOP (S (VP (V kill)) (NP him)))"
 
 val dg:DGraph[IndexedSeq[String],String] = SExpression.parse(tree)
 ```
+
+You can look at DGraph lib and its useful property here: https://github.com/omidb/dgraph 
