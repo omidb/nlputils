@@ -23,7 +23,7 @@ class TripsOnline extends TripsOnlineParser {
       try {
         Some(
           Http(server)
-            .timeout(connTimeoutMs = 10000, readTimeoutMs = 10000)
+            .timeout(connTimeoutMs = 200000, readTimeoutMs = 200000)
             .param("genre", "text")
             .param("input", text)
             .params(Seq(
