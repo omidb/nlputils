@@ -2,6 +2,8 @@ package com.github.omidb.nlp.formats
 
 import dgraph._
 
+import scala.collection.immutable.TreeMap
+
 
 object SExpression {
 
@@ -44,6 +46,65 @@ object SExpression {
         None
       }
     }
+  }
+
+
+  def parse2(s: String, checkQuote: Boolean = false) = {
+    var qstack = List.empty[Node[IndexedSeq[String]]]
+    def isWhiteSpace(c:Char) = c.isWhitespace || c == '\n'
+    var index = 0
+    var token = ""
+    var justCheckedWhiteSpaces = false
+    var nIndex = 0
+    val nodes = collection.mutable.Map.empty[Int, Node[IndexedSeq[String]]]
+    var edges = TreeMap.empty[(Int,Int), DEdge[String]]
+    var graph = DGraph.empty[IndexedSeq[String],String]()
+    var oneNode = false
+
+    def addNewAtr(str:String) = {
+      qstack = qstack.updated(0, qstack.head.copy(value = qstack.head.value :+ str))
+      token = ""
+    }
+
+    def addNewChild() = {
+      val newNode = Node[IndexedSeq[String]](IndexedSeq.empty[String],nIndex)
+      if(qstack.nonEmpty) edges = edges.updated((qstack.head.id, newNode.id), DEdge("",qstack.head.id, newNode.id))
+      qstack =  newNode :: qstack
+      nIndex += 1
+    }
+
+    while(index < s.length){
+      val c = s.charAt(index)
+      if(isWhiteSpace(c)){
+        if(!justCheckedWhiteSpaces && token != "" && qstack.nonEmpty){
+          addNewAtr(s"$token")
+          justCheckedWhiteSpaces = true
+        }
+      }
+      else if(c == '('){
+        oneNode = true
+        justCheckedWhiteSpaces = false
+        if(token != "" && qstack.nonEmpty) addNewAtr(token)
+        addNewChild()
+      }
+      else if(c == ')'){
+        if(token != "" && qstack.nonEmpty) addNewAtr(token)
+        //
+        nodes.update(qstack.head.id,qstack.head)
+        qstack = qstack.tail
+      }
+      else {
+        justCheckedWhiteSpaces = false
+        token += c
+      }
+      index +=1
+    }
+
+    nodes.foreach(n => println(n._2))
+    edges.foreach(e => println(e._2))
+    if(qstack.isEmpty && oneNode)
+      Some(DGraph.from(nodes.toMap,edges))
+    else None
   }
 
   def pprint(expr: DGraph[IndexedSeq[String], String]): String = {

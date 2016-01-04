@@ -63,7 +63,9 @@ lazy val nlputils = crossProject
   scalaJSStage in Global := FastOptStage
 ).jvmSettings(
   libraryDependencies ++= Seq(
-    "com.github.pathikrit" %% "better-files" % "2.13.0"
+    "com.github.pathikrit" %% "better-files" % "2.13.0",
+    "org.scalaj" %% "scalaj-http" % "2.2.0",
+    "org.scala-lang.modules" %% "scala-xml" % "1.0.3"
   )
 )
 
