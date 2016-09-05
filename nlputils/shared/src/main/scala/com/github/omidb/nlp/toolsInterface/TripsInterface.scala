@@ -3,7 +3,7 @@ package com.github.omidb.nlp.toolsInterface
 import dgraph.DGraph
 
 trait TripsOnlineParser {
-  def parse(serverAddress:String, text:String):Option[List[TripsLF]]
+  def onlineParse(serverAddress:String, text:String):Option[List[TripsLF]]
 }
 
 object TripsServers {

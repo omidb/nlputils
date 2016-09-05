@@ -7,7 +7,7 @@ import fastparse.all.parserApi
 
 class TripsOnline extends TripsOnlineParser {
   import scalaj.http.{Http, HttpResponse}
-  override def parse(server:String, text:String) = {
+  override def onlineParse(server:String, text:String) = {
     sendRequest(server,text).map(body => processXML(body).toList)
   }
 
@@ -18,7 +18,16 @@ class TripsOnline extends TripsOnlineParser {
     processXML(File(path).lines.mkString("\n"))
   }
 
+  //
+//    .params(Seq(
+//    ("tagsformat", "hidden"), ("treecontents", "phrase"), ("treeformat", "LinGO"),
+//    ("lfformat", "svg"), ("no-sense-words", ""), ("extsformat", "table"),
+//    ("tag-type", "%28or+terms+words+punctuation+%28and+stanford_core_nlp+%28or+named-entity+pos%29%29+street_addresses+capitalized_names+alphanumerics+quotations+alternate_spellings%29"),
+//    ("senses-only-for-penn-poss", "")))
+  //
+
   private def sendRequest(server:String, text:String) = {
+    println(text)
     val response: Option[HttpResponse[String]] =
       try {
         Some(
@@ -26,14 +35,9 @@ class TripsOnline extends TripsOnlineParser {
             .timeout(connTimeoutMs = 200000, readTimeoutMs = 200000)
             .param("genre", "text")
             .param("input", text)
-            .params(Seq(
-              ("tagsformat", "hidden"), ("treecontents", "phrase"), ("treeformat", "LinGO"),
-              ("lfformat", "svg"), ("no-sense-words", ""), ("extsformat", "table"),
-              ("tag-type", "%28or+terms+words+punctuation+%28and+stanford_core_nlp+%28or+named-entity+pos%29%29+street_addresses+capitalized_names+alphanumerics+quotations+alternate_spellings%29"),
-              ("senses-only-for-penn-poss", ""))).asString
+            .asString
         )
       } catch {case _ => None}
-
     if(response.isDefined && response.get.isSuccess) Some(response.get.body) else None
   }
 
@@ -41,7 +45,8 @@ class TripsOnline extends TripsOnlineParser {
     val f = javax.xml.parsers.SAXParserFactory.newInstance()
     f.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
     val sxp = f.newSAXParser()
-    val xml = scala.xml.XML.withSAXParser(sxp).loadString(body)
+    val xml = scala.xml.XML.withSAXParser(sxp).loadString(body.split("\n")
+      .filterNot(l => l.startsWith("<!DOCTYPE") || l.startsWith("<?xml-stylesheet")).mkString("\n"))
 
     val containsMultipleSentence = xml \\ "trips-parser-output" contains "compound-communication-act"
     val mainNodes =
@@ -75,12 +80,13 @@ class TripsOnline extends TripsOnlineParser {
       val allChilds = nd \ "_"
       val textChilds = allChilds map(c => c.label -> c.text) filterNot(_._2 == "")
       val atrChilds = allChilds map(c => c.label -> c.attributes.map(a => a.key -> a.value.mkString)) filterNot(_._2.toList.isEmpty)
-      graph = graph.addNode(Node(("ID" -> id :: textChilds.toList).toMap,nodeID))
+      graph = graph.addNode(Node(("ID" -> id :: textChilds.toList).toMap, nodeID))._2
       edges ++= atrChilds.map(x => (id ,x._1, x._2.head._2.substring(1))).toList
       nodeID += 1
     })
     for (elem <- edges) {
-      graph = graph.addEdge(DEdge(elem._2, nodeKeys(elem._1), nodeKeys(elem._3))).get
+      if(nodeKeys.contains(elem._1) && nodeKeys.contains(elem._3))
+        graph = graph.addEdge(DEdge(elem._2, nodeKeys(elem._1), nodeKeys(elem._3))).get._2
     }
     graph
   }
