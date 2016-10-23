@@ -7,8 +7,8 @@ import fastparse.all.parserApi
 
 class TripsOnline extends TripsOnlineParser {
   import scalaj.http.{Http, HttpResponse}
-  override def onlineParse(server:String, text:String) = {
-    sendRequest(server,text).map(body => processXML(body).toList)
+  override def onlineParse(server:String, text:String):TripsDoc = {
+    TripsDoc(sendRequest(server,text).map(body => processXML(body)).toSeq.flatten.toSeq)
   }
 
   def fromStrig(str:String) = processXML(str)
