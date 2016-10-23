@@ -4,13 +4,13 @@ import com.typesafe.sbt.pgp.PgpKeys._
 
 val commonSettings = Seq(
   organization := "com.github.omidb",
-  version := "0.1.0-SNAPSHOT",
+  version := "0.1.1-SNAPSHOT",
   scalaVersion := "2.11.6",
   testFrameworks += new TestFramework("utest.runner.Framework"),
   resolvers += Resolver.sonatypeRepo("snapshots"),
   libraryDependencies ++= Seq(
     "com.lihaoyi" %%% "utest" % "0.3.1" % "test",
-    "com.github.omidb" %%% "dgraph" % "0.1.0-SNAPSHOT",
+    "com.github.omidb" %%% "dgraph" % "0.1.1-SNAPSHOT",
     "com.lihaoyi" %%% "fastparse" % "0.2.1",
     "com.beachape" %% "enumeratum" % "1.3.2"
   )
